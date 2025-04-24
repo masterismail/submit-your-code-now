@@ -5,20 +5,22 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PieChart, BarChart, LineChart } from "recharts";
+import { PieChart, Pie, LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format, subDays, isSameDay, isSameMonth } from "date-fns";
 import { ArrowRight, Plus, DollarSign, TrendingDown, TrendingUp, LineChart as LineChartIcon, PieChart as PieChartIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 const Dashboard: React.FC = () => {
-  const { expenses, wallet, budget, categories } = useData();
+  const { expenses, wallet, budget, categories, spendingTrends } = useData();
   const navigate = useNavigate();
   
-  // Format currency
+  // Format currency - Changed to INR
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: wallet.currency,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
   
@@ -80,6 +82,30 @@ const Dashboard: React.FC = () => {
       .filter(cat => cat.total > 0)
       .sort((a, b) => b.total - a.total);
   }, [expenses, categories]);
+
+  // Prepare data for category pie chart
+  const categoryPieData = spendingByCategory.map(cat => ({
+    name: cat.name,
+    value: cat.total,
+    color: cat.color,
+  }));
+
+  // Prepare data for timeline chart (last 7 days)
+  const timelineData = useMemo(() => {
+    const result = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = subDays(new Date(), i);
+      const dayTotal = expenses
+        .filter(expense => isSameDay(new Date(expense.date), date))
+        .reduce((sum, expense) => sum + expense.amount, 0);
+      
+      result.push({
+        date: format(date, 'dd MMM'),
+        amount: dayTotal,
+      });
+    }
+    return result;
+  }, [expenses]);
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -270,20 +296,62 @@ const Dashboard: React.FC = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="categories">
-                <div className="h-[200px] flex items-center justify-center">
-                  <div className="text-center text-sm text-muted-foreground">
-                    Categorical spending chart would go here
-                  </div>
-                </div>
+              <TabsContent value="categories" className="h-[230px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryPieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {categoryPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value) => [formatCurrency(value as number), "Amount"]}
+                      contentStyle={{ borderRadius: "8px", border: "1px solid #e2e8f0", backgroundColor: "#ffffff" }}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
               </TabsContent>
               
-              <TabsContent value="timeline">
-                <div className="h-[200px] flex items-center justify-center">
-                  <div className="text-center text-sm text-muted-foreground">
-                    Timeline spending chart would go here
-                  </div>
-                </div>
+              <TabsContent value="timeline" className="h-[230px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={timelineData}
+                    margin={{
+                      top: 5,
+                      right: 10,
+                      left: 10,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis 
+                      tick={{ fontSize: 12 }} 
+                      tickFormatter={(value) => `₹${value}`} 
+                      width={60}
+                    />
+                    <Tooltip 
+                      formatter={(value) => [formatCurrency(value as number), "Amount"]}
+                      contentStyle={{ borderRadius: "8px", border: "1px solid #e2e8f0", backgroundColor: "#ffffff" }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="amount" 
+                      stroke="#8884d8" 
+                      strokeWidth={2} 
+                      activeDot={{ r: 6 }} 
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </TabsContent>
             </Tabs>
           </CardContent>

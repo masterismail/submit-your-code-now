@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { 
   Expense, 
@@ -26,21 +27,21 @@ const defaultCategories: Category[] = [
 const defaultExpenses: Expense[] = [
   {
     id: "1",
-    amount: 45.99,
+    amount: 4599,
     category: "Food",
     description: "Grocery shopping",
     date: new Date(2025, 3, 20),
   },
   {
     id: "2",
-    amount: 25.00,
+    amount: 2500,
     category: "Transport",
     description: "Uber ride",
     date: new Date(2025, 3, 19),
   },
   {
     id: "3",
-    amount: 129.99,
+    amount: 12999,
     category: "Shopping",
     description: "New headphones",
     date: new Date(2025, 3, 17),
@@ -48,45 +49,45 @@ const defaultExpenses: Expense[] = [
   },
   {
     id: "4",
-    amount: 15.50,
+    amount: 1550,
     category: "Entertainment",
     description: "Movie ticket",
     date: new Date(2025, 3, 15),
   },
   {
     id: "5",
-    amount: 35.75,
+    amount: 3575,
     category: "Health",
     description: "Pharmacy",
     date: new Date(2025, 3, 14),
   },
   {
     id: "6",
-    amount: 78.23,
+    amount: 7823,
     category: "Utilities",
     description: "Electricity bill",
     date: new Date(2025, 3, 10),
   },
 ];
 
-// Default values
-const defaultWallet: Wallet = { balance: 2450.75, currency: "USD" };
-const defaultBudget: Budget = { amount: 1000, period: "monthly" };
-const defaultThresholdAlert: ThresholdAlert = { amount: 500, enabled: true };
+// Default values - Changed currency to INR and adjusted amounts
+const defaultWallet: Wallet = { balance: 245075, currency: "INR" };
+const defaultBudget: Budget = { amount: 100000, period: "monthly" };
+const defaultThresholdAlert: ThresholdAlert = { amount: 50000, enabled: true };
 const defaultGoals: FinancialGoal[] = [
   {
     id: "1",
     name: "Vacation",
-    targetAmount: 1500,
-    currentAmount: 750,
+    targetAmount: 150000,
+    currentAmount: 75000,
     deadline: new Date(2025, 8, 1),
-    description: "Summer vacation in Italy",
+    description: "Summer vacation in Goa",
   },
   {
     id: "2",
     name: "New Laptop",
-    targetAmount: 1200,
-    currentAmount: 300,
+    targetAmount: 120000,
+    currentAmount: 30000,
     deadline: new Date(2025, 6, 15),
     description: "MacBook Air",
   },
