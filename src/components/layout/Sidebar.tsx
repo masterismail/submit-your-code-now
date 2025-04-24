@@ -19,13 +19,13 @@ const Sidebar: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const navItems = [
-    { icon: BarChart, label: "Dashboard", path: "/" },
-    { icon: PlusCircle, label: "Add Expense", path: "/add-expense" },
-    { icon: Receipt, label: "Expenses", path: "/expenses" },
-    { icon: Wallet, label: "Wallet", path: "/wallet" },
-    { icon: Target, label: "Goals", path: "/goals" },
-    { icon: Bell, label: "Notifications", path: "/notifications", badge: unreadCount },
-    { icon: Settings, label: "Settings", path: "/settings" }
+    { icon: BarChart, label: "Dashboard", path: "/app/dashboard" },
+    { icon: PlusCircle, label: "Add Expense", path: "/app/add-expense" },
+    { icon: Receipt, label: "Expenses", path: "/app/expenses" },
+    { icon: Wallet, label: "Wallet", path: "/app/wallet" },
+    { icon: Target, label: "Goals", path: "/app/goals" },
+    { icon: Bell, label: "Notifications", path: "/app/notifications", badge: unreadCount },
+    { icon: Settings, label: "Settings", path: "/app/settings" }
   ];
 
   return (

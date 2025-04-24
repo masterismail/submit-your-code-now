@@ -10,7 +10,7 @@ import {
   Notification,
   SpendingTrend
 } from "@/types";
-import { format } from "date-fns";
+import { toast } from "@/hooks/use-toast";
 
 // Sample categories with icons from lucide-react
 const defaultCategories: Category[] = [
@@ -23,71 +23,24 @@ const defaultCategories: Category[] = [
   { id: "7", name: "Other", color: "#9E9E9E", icon: "more-horizontal" },
 ];
 
-// Sample expenses
-const defaultExpenses: Expense[] = [
-  {
-    id: "1",
-    amount: 4599,
-    category: "Food",
-    description: "Grocery shopping",
-    date: new Date(2025, 3, 20),
-  },
-  {
-    id: "2",
-    amount: 2500,
-    category: "Transport",
-    description: "Uber ride",
-    date: new Date(2025, 3, 19),
-  },
-  {
-    id: "3",
-    amount: 12999,
-    category: "Shopping",
-    description: "New headphones",
-    date: new Date(2025, 3, 17),
-    receipt: "receipt1.jpg",
-  },
-  {
-    id: "4",
-    amount: 1550,
-    category: "Entertainment",
-    description: "Movie ticket",
-    date: new Date(2025, 3, 15),
-  },
-  {
-    id: "5",
-    amount: 3575,
-    category: "Health",
-    description: "Pharmacy",
-    date: new Date(2025, 3, 14),
-  },
-  {
-    id: "6",
-    amount: 7823,
-    category: "Utilities",
-    description: "Electricity bill",
-    date: new Date(2025, 3, 10),
-  },
-];
-
-// Default values - Changed currency to INR and adjusted amounts
-const defaultWallet: Wallet = { balance: 245075, currency: "INR" };
-const defaultBudget: Budget = { amount: 100000, period: "monthly" };
-const defaultThresholdAlert: ThresholdAlert = { amount: 50000, enabled: true };
+// Default values with INR as the currency
+const defaultWallet: Wallet = { balance: 2450.75, currency: "INR" };
+const defaultBudget: Budget = { amount: 1000, period: "monthly" };
+const defaultThresholdAlert: ThresholdAlert = { amount: 500, enabled: true };
 const defaultGoals: FinancialGoal[] = [
   {
     id: "1",
     name: "Vacation",
-    targetAmount: 150000,
-    currentAmount: 75000,
+    targetAmount: 1500,
+    currentAmount: 750,
     deadline: new Date(2025, 8, 1),
-    description: "Summer vacation in Goa",
+    description: "Summer vacation in Italy",
   },
   {
     id: "2",
     name: "New Laptop",
-    targetAmount: 120000,
-    currentAmount: 30000,
+    targetAmount: 1200,
+    currentAmount: 300,
     deadline: new Date(2025, 6, 15),
     description: "MacBook Air",
   },
@@ -106,6 +59,53 @@ const defaultNotifications: Notification[] = [
     read: true,
     date: new Date(2025, 3, 18),
     type: "info",
+  },
+];
+
+// Sample expenses
+const defaultExpenses: Expense[] = [
+  {
+    id: "1",
+    amount: 45.99,
+    category: "Food",
+    description: "Grocery shopping",
+    date: new Date(2025, 3, 20),
+  },
+  {
+    id: "2",
+    amount: 25.00,
+    category: "Transport",
+    description: "Uber ride",
+    date: new Date(2025, 3, 19),
+  },
+  {
+    id: "3",
+    amount: 129.99,
+    category: "Shopping",
+    description: "New headphones",
+    date: new Date(2025, 3, 17),
+    receipt: "receipt1.jpg",
+  },
+  {
+    id: "4",
+    amount: 15.50,
+    category: "Entertainment",
+    description: "Movie ticket",
+    date: new Date(2025, 3, 15),
+  },
+  {
+    id: "5",
+    amount: 35.75,
+    category: "Health",
+    description: "Pharmacy",
+    date: new Date(2025, 3, 14),
+  },
+  {
+    id: "6",
+    amount: 78.23,
+    category: "Utilities",
+    description: "Electricity bill",
+    date: new Date(2025, 3, 10),
   },
 ];
 
@@ -155,6 +155,7 @@ interface DataContextType {
   addNotification: (notification: Omit<Notification, "id" | "date" | "read">) => void;
   deleteNotification: (notificationId: string) => void;
   clearAllNotifications: () => void;
+  clearAllData: () => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -168,6 +169,89 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [goals, setGoals] = useState<FinancialGoal[]>(defaultGoals);
   const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
   const [spendingTrends, setSpendingTrends] = useState<SpendingTrend[]>([]);
+
+  // Load data from localStorage on initial mount
+  useEffect(() => {
+    const loadData = () => {
+      try {
+        // Load expenses
+        const storedExpenses = localStorage.getItem('expenses');
+        if (storedExpenses) {
+          // Parse dates back to Date objects
+          const parsedExpenses = JSON.parse(storedExpenses).map((exp: any) => ({
+            ...exp,
+            date: new Date(exp.date)
+          }));
+          setExpenses(parsedExpenses);
+        }
+
+        // Load wallet
+        const storedWallet = localStorage.getItem('wallet');
+        if (storedWallet) setWallet(JSON.parse(storedWallet));
+
+        // Load budget
+        const storedBudget = localStorage.getItem('budget');
+        if (storedBudget) setBudgetState(JSON.parse(storedBudget));
+
+        // Load threshold alert
+        const storedThresholdAlert = localStorage.getItem('thresholdAlert');
+        if (storedThresholdAlert) setThresholdAlertState(JSON.parse(storedThresholdAlert));
+
+        // Load goals
+        const storedGoals = localStorage.getItem('goals');
+        if (storedGoals) {
+          // Parse dates back to Date objects
+          const parsedGoals = JSON.parse(storedGoals).map((goal: any) => ({
+            ...goal,
+            deadline: goal.deadline ? new Date(goal.deadline) : undefined
+          }));
+          setGoals(parsedGoals);
+        }
+
+        // Load notifications
+        const storedNotifications = localStorage.getItem('notifications');
+        if (storedNotifications) {
+          // Parse dates back to Date objects
+          const parsedNotifications = JSON.parse(storedNotifications).map((notif: any) => ({
+            ...notif,
+            date: new Date(notif.date)
+          }));
+          setNotifications(parsedNotifications);
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        // Just continue with default data
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    // Save expenses
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+  }, [expenses]);
+
+  useEffect(() => {
+    localStorage.setItem('wallet', JSON.stringify(wallet));
+  }, [wallet]);
+
+  useEffect(() => {
+    localStorage.setItem('budget', JSON.stringify(budget));
+  }, [budget]);
+
+  useEffect(() => {
+    localStorage.setItem('thresholdAlert', JSON.stringify(thresholdAlert));
+  }, [thresholdAlert]);
+
+  useEffect(() => {
+    localStorage.setItem('goals', JSON.stringify(goals));
+  }, [goals]);
+
+  useEffect(() => {
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+  }, [notifications]);
 
   // Update spending trends whenever expenses change
   useEffect(() => {
@@ -244,6 +328,26 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateGoal = (updatedGoal: FinancialGoal) => {
+    const existingGoal = goals.find(goal => goal.id === updatedGoal.id);
+    
+    if (existingGoal) {
+      const amountAdded = updatedGoal.currentAmount - existingGoal.currentAmount;
+      
+      // If money was added to the goal, deduct it from the wallet
+      if (amountAdded > 0) {
+        setWallet(prev => ({
+          ...prev,
+          balance: prev.balance - amountAdded,
+        }));
+        
+        // Add a notification about the contribution
+        addNotification({
+          message: `You've contributed ${amountAdded} ${wallet.currency} to your "${updatedGoal.name}" goal.`,
+          type: "info"
+        });
+      }
+    }
+    
     setGoals(prev =>
       prev.map(goal => (goal.id === updatedGoal.id ? updatedGoal : goal))
     );
@@ -301,6 +405,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearAllNotifications = () => {
     setNotifications([]);
   };
+  
+  const clearAllData = () => {
+    try {
+      // Clear all data from localStorage
+      localStorage.removeItem('expenses');
+      localStorage.removeItem('wallet');
+      localStorage.removeItem('budget');
+      localStorage.removeItem('thresholdAlert');
+      localStorage.removeItem('goals');
+      localStorage.removeItem('notifications');
+      
+      // Reset state to defaults
+      setExpenses(defaultExpenses);
+      setWallet(defaultWallet);
+      setBudgetState(defaultBudget);
+      setThresholdAlertState(defaultThresholdAlert);
+      setGoals(defaultGoals);
+      setNotifications([
+        {
+          id: Date.now().toString(),
+          message: "All data has been cleared successfully",
+          read: false,
+          date: new Date(),
+          type: "success",
+        },
+      ]);
+      
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      addNotification({
+        message: "Error clearing data. Please try again later.",
+        type: "alert",
+      });
+    }
+  };
 
   return (
     <DataContext.Provider
@@ -326,6 +465,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addNotification,
         deleteNotification,
         clearAllNotifications,
+        clearAllData,
       }}
     >
       {children}

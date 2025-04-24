@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wallet as WalletIcon, CreditCard, ArrowDown, ArrowUp } from "lucide-react";
+import { Wallet as WalletIcon, CreditCard, ArrowDown, ArrowUp, IndianRupee } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Wallet: React.FC = () => {
@@ -21,9 +21,23 @@ const Wallet: React.FC = () => {
   // Calculate total spent
   const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   
+  // Get currency symbol based on currency code
+  const getCurrencySymbol = (currency: string) => {
+    switch(currency) {
+      case "INR": return "₹";
+      case "USD": return "$";
+      case "EUR": return "€";
+      case "GBP": return "£";
+      case "JPY": return "¥";
+      case "CAD": return "C$";
+      case "AUD": return "A$";
+      default: return currency;
+    }
+  };
+  
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: wallet.currency,
     }).format(amount);
@@ -141,7 +155,7 @@ const Wallet: React.FC = () => {
                 <Label htmlFor="amount">Amount</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-muted-foreground">
-                    {wallet.currency === "USD" ? "$" : wallet.currency}
+                    {getCurrencySymbol(wallet.currency)}
                   </span>
                   <Input
                     id="amount"
@@ -180,13 +194,13 @@ const Wallet: React.FC = () => {
                     <SelectValue placeholder="Select a currency" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="INR">Indian Rupee (INR)</SelectItem>
                     <SelectItem value="USD">US Dollar (USD)</SelectItem>
                     <SelectItem value="EUR">Euro (EUR)</SelectItem>
                     <SelectItem value="GBP">British Pound (GBP)</SelectItem>
                     <SelectItem value="JPY">Japanese Yen (JPY)</SelectItem>
                     <SelectItem value="CAD">Canadian Dollar (CAD)</SelectItem>
                     <SelectItem value="AUD">Australian Dollar (AUD)</SelectItem>
-                    <SelectItem value="INR">Indian Rupee (INR)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

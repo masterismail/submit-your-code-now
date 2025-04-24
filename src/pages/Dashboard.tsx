@@ -1,26 +1,24 @@
-
 import React, { useMemo } from "react";
 import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PieChart, Pie, LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { format, subDays, isSameDay, isSameMonth } from "date-fns";
-import { ArrowRight, Plus, DollarSign, TrendingDown, TrendingUp, LineChart as LineChartIcon, PieChart as PieChartIcon } from "lucide-react";
+import { PieChart, BarChart, LineChart, ResponsiveContainer, Tooltip, Cell, XAxis, YAxis, CartesianGrid, Legend, Pie, Bar, Line } from "recharts";
+import { format, subDays, isSameDay, isSameMonth, subMonths } from "date-fns";
+import { ArrowRight, Plus, DollarSign, TrendingDown, TrendingUp, LineChart as LineChartIcon, PieChart as PieChartIcon, ChartBar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 
 const Dashboard: React.FC = () => {
   const { expenses, wallet, budget, categories, spendingTrends } = useData();
   const navigate = useNavigate();
   
-  // Format currency - Changed to INR
+  // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: wallet.currency,
-      maximumFractionDigits: 0,
     }).format(amount);
   };
   
@@ -82,30 +80,54 @@ const Dashboard: React.FC = () => {
       .filter(cat => cat.total > 0)
       .sort((a, b) => b.total - a.total);
   }, [expenses, categories]);
-
-  // Prepare data for category pie chart
-  const categoryPieData = spendingByCategory.map(cat => ({
-    name: cat.name,
-    value: cat.total,
-    color: cat.color,
-  }));
-
-  // Prepare data for timeline chart (last 7 days)
+  
+  // Prepare data for pie chart
+  const pieChartData = useMemo(() => {
+    return spendingByCategory.map(category => ({
+      name: category.name,
+      value: category.total,
+      color: category.color,
+    }));
+  }, [spendingByCategory]);
+  
+  // Prepare data for timeline chart
   const timelineData = useMemo(() => {
-    const result = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = subDays(new Date(), i);
-      const dayTotal = expenses
-        .filter(expense => isSameDay(new Date(expense.date), date))
-        .reduce((sum, expense) => sum + expense.amount, 0);
-      
-      result.push({
-        date: format(date, 'dd MMM'),
-        amount: dayTotal,
-      });
-    }
-    return result;
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = subDays(new Date(), 6 - i);
+      return {
+        date: format(date, "dd MMM"),
+        amount: expenses
+          .filter(expense => isSameDay(new Date(expense.date), date))
+          .reduce((sum, expense) => sum + expense.amount, 0),
+      };
+    });
+    
+    return last7Days;
   }, [expenses]);
+  
+  // Prepare monthly spending data
+  const monthlyData = useMemo(() => {
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const date = subMonths(new Date(), 5 - i);
+      const month = format(date, "MMM");
+      const year = format(date, "yyyy");
+      const monthExpenses = expenses.filter(expense => {
+        const expDate = new Date(expense.date);
+        return expDate.getMonth() === date.getMonth() && 
+               expDate.getFullYear() === date.getFullYear();
+      });
+      
+      return {
+        name: month,
+        year: year,
+        amount: monthExpenses.reduce((sum, exp) => sum + exp.amount, 0),
+      };
+    });
+    
+    return last6Months;
+  }, [expenses]);
+  
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC0CB'];
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -294,64 +316,112 @@ const Dashboard: React.FC = () => {
                   <LineChartIcon className="h-4 w-4 mr-2" />
                   Timeline
                 </TabsTrigger>
+                <TabsTrigger value="monthly">
+                  <ChartBar className="h-4 w-4 mr-2" />
+                  Monthly
+                </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="categories" className="h-[230px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryPieData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {categoryPieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value) => [formatCurrency(value as number), "Amount"]}
-                      contentStyle={{ borderRadius: "8px", border: "1px solid #e2e8f0", backgroundColor: "#ffffff" }}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+              <TabsContent value="categories" className="h-[250px]">
+                {pieChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Tooltip 
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-white p-2 border rounded shadow text-sm">
+                                <p className="font-medium">{data.name}</p>
+                                <p>{formatCurrency(data.value)}</p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Legend 
+                        layout="vertical" 
+                        verticalAlign="middle" 
+                        align="right"
+                        formatter={(value) => <span className="text-xs">{value}</span>}
+                      />
+                      <Pie
+                        data={pieChartData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        labelLine={false}
+                      >
+                        {pieChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                    No spending data to display
+                  </div>
+                )}
               </TabsContent>
               
-              <TabsContent value="timeline" className="h-[230px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={timelineData}
-                    margin={{
-                      top: 5,
-                      right: 10,
-                      left: 10,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis 
-                      tick={{ fontSize: 12 }} 
-                      tickFormatter={(value) => `₹${value}`} 
-                      width={60}
-                    />
-                    <Tooltip 
-                      formatter={(value) => [formatCurrency(value as number), "Amount"]}
-                      contentStyle={{ borderRadius: "8px", border: "1px solid #e2e8f0", backgroundColor: "#ffffff" }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="amount" 
-                      stroke="#8884d8" 
-                      strokeWidth={2} 
-                      activeDot={{ r: 6 }} 
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <TabsContent value="timeline" className="h-[250px]">
+                {timelineData.some(day => day.amount > 0) ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={timelineData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis 
+                        tickFormatter={(value) => `${wallet.currency} ${value}`} 
+                      />
+                      <Tooltip formatter={(value) => [`${formatCurrency(Number(value))}`, 'Spent']} />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="amount" 
+                        name="Daily Spending" 
+                        stroke="#3b82f6" 
+                        strokeWidth={2}
+                        activeDot={{ r: 8 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                    No daily spending data to display
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="monthly" className="h-[250px]">
+                {monthlyData.some(month => month.amount > 0) ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis 
+                        tickFormatter={(value) => `${wallet.currency} ${value}`}
+                      />
+                      <Tooltip 
+                        formatter={(value) => [`${formatCurrency(Number(value))}`, 'Spent']} 
+                        labelFormatter={(label) => `${label}`}
+                      />
+                      <Legend />
+                      <Bar 
+                        dataKey="amount" 
+                        name="Monthly Spending" 
+                        fill="#3b82f6"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                    No monthly spending data to display
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +8,21 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Wallet, PieChart } from "lucide-react";
+import { Bell, Wallet, PieChart, Download, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const Settings: React.FC = () => {
-  const { budget, setBudget, thresholdAlert, setThresholdAlert, wallet } = useData();
+  
+  const { 
+    budget, 
+    setBudget, 
+    thresholdAlert, 
+    setThresholdAlert, 
+    wallet, 
+    expenses,
+    clearAllData
+  } = useData();
+  
   const { toast } = useToast();
   
   const [budgetAmount, setBudgetAmount] = useState(budget.amount.toString());
@@ -22,7 +32,7 @@ const Settings: React.FC = () => {
   
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: wallet.currency,
     }).format(amount);
@@ -73,6 +83,50 @@ const Settings: React.FC = () => {
       description: thresholdEnabled 
         ? `You will be notified when you spend more than ${formatCurrency(amount)}.` 
         : "Spending threshold notifications have been disabled.",
+    });
+  };
+  
+  const handleExportToCSV = () => {
+    // Convert expenses to CSV format
+    const headers = ["ID", "Amount", "Category", "Description", "Date", "Receipt"];
+    const csvData = expenses.map(expense => [
+      expense.id,
+      expense.amount,
+      expense.category,
+      expense.description,
+      expense.date instanceof Date ? expense.date.toISOString() : new Date(expense.date).toISOString(),
+      expense.receipt || ""
+    ]);
+    
+    // Create CSV content
+    const csvContent = [
+      headers.join(","),
+      ...csvData.map(row => row.join(","))
+    ].join("\n");
+    
+    // Create a blob and download link
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `expenses_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Export successful",
+      description: "Your expense data has been exported to CSV.",
+    });
+  };
+  
+  const handleClearAllData = () => {
+    clearAllData();
+    toast({
+      title: "Data cleared",
+      description: "All your data has been cleared successfully.",
+      variant: "destructive",
     });
   };
   
@@ -212,7 +266,8 @@ const Settings: React.FC = () => {
             <p className="text-sm text-muted-foreground mb-3">
               Export your expense data for backup or analysis
             </p>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExportToCSV}>
+              <Download className="h-4 w-4 mr-2" />
               Export to CSV
             </Button>
           </div>
@@ -224,9 +279,29 @@ const Settings: React.FC = () => {
             <p className="text-sm text-muted-foreground mb-3">
               Permanently delete your data
             </p>
-            <Button variant="destructive">
-              Clear All Data
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Clear All Data
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will permanently delete all your expense data, budgets, goals, and settings. 
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearAllData} className="bg-destructive text-destructive-foreground">
+                    Delete All Data
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </CardContent>
       </Card>

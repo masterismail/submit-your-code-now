@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -36,9 +35,23 @@ const Goals: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   
+  // Get currency symbol based on currency code
+  const getCurrencySymbol = (currency: string) => {
+    switch(currency) {
+      case "INR": return "₹";
+      case "USD": return "$";
+      case "EUR": return "€";
+      case "GBP": return "£";
+      case "JPY": return "¥";
+      case "CAD": return "C$";
+      case "AUD": return "A$";
+      default: return currency;
+    }
+  };
+  
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: wallet.currency,
     }).format(amount);
@@ -165,6 +178,7 @@ const Goals: React.FC = () => {
       return;
     }
     
+    // Update the goal with the new contribution
     updateGoal({
       ...goal,
       currentAmount: goal.currentAmount + amount,
@@ -218,7 +232,7 @@ const Goals: React.FC = () => {
                 <Label htmlFor="targetAmount">Target Amount</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-muted-foreground">
-                    {wallet.currency === "USD" ? "$" : wallet.currency}
+                    {getCurrencySymbol(wallet.currency)}
                   </span>
                   <Input 
                     id="targetAmount" 
@@ -237,7 +251,7 @@ const Goals: React.FC = () => {
                 <Label htmlFor="currentAmount">Current Progress (Optional)</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-muted-foreground">
-                    {wallet.currency === "USD" ? "$" : wallet.currency}
+                    {getCurrencySymbol(wallet.currency)}
                   </span>
                   <Input 
                     id="currentAmount" 
@@ -443,7 +457,7 @@ const Goals: React.FC = () => {
               <Label htmlFor="contributeAmount">Contribution Amount</Label>
               <div className="relative">
                 <span className="absolute left-3 top-2.5 text-muted-foreground">
-                  {wallet.currency === "USD" ? "$" : wallet.currency}
+                  {getCurrencySymbol(wallet.currency)}
                 </span>
                 <Input 
                   id="contributeAmount" 
