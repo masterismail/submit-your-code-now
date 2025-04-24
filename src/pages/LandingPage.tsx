@@ -53,6 +53,7 @@ const LandingPage: React.FC = () => {
   const { toast } = useToast();
   const [showOtpForm, setShowOtpForm] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [mockOtp, setMockOtp] = useState(""); // Store the mock OTP
 
   // Sign up form
   const signupForm = useForm<z.infer<typeof signupSchema>>({
@@ -86,10 +87,14 @@ const LandingPage: React.FC = () => {
     setUserEmail(values.email);
     setShowOtpForm(true);
     
-    // In a real app, this would call an API to send OTP
+    // Generate a random 6-digit OTP
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    setMockOtp(generatedOtp);
+    
+    // In a real app with backend, this would send an actual email with the OTP
     toast({
-      title: "OTP Sent!",
-      description: `A verification code has been sent to ${values.email}`,
+      title: "OTP Generated!",
+      description: `In a real app, a verification code would be sent to ${values.email}. For this demo, use: ${generatedOtp}`,
     });
   };
 
@@ -108,18 +113,26 @@ const LandingPage: React.FC = () => {
   // Verify OTP and complete signup
   const verifyOtp = (values: z.infer<typeof otpSchema>) => {
     // In a real app, this would verify the OTP with a backend
-    
-    toast({
-      title: "Account created!",
-      description: "You have successfully signed up",
-    });
-    
-    // Reset forms and states
-    setShowOtpForm(false);
-    signupForm.reset();
-    
-    // Redirect to dashboard
-    navigate("/");
+    // For this demo, we'll compare with our mock OTP
+    if (values.otp === mockOtp) {
+      toast({
+        title: "Account created!",
+        description: "You have successfully signed up",
+      });
+      
+      // Reset forms and states
+      setShowOtpForm(false);
+      signupForm.reset();
+      
+      // Redirect to dashboard
+      navigate("/");
+    } else {
+      toast({
+        title: "Invalid OTP",
+        description: "The verification code you entered is incorrect",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -225,13 +238,15 @@ const LandingPage: React.FC = () => {
                               <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    placeholder="Enter your email" 
-                                    type="email" 
-                                    {...field} 
-                                    className="flex h-10" 
-                                    icon={<Mail className="h-4 w-4" />}
-                                  />
+                                  <div className="relative">
+                                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <Input 
+                                      placeholder="Enter your email" 
+                                      type="email" 
+                                      {...field} 
+                                      className="pl-10" 
+                                    />
+                                  </div>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -279,12 +294,14 @@ const LandingPage: React.FC = () => {
                               <FormItem>
                                 <FormLabel>Full Name</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    placeholder="Enter your name" 
-                                    {...field} 
-                                    className="flex h-10" 
-                                    icon={<User className="h-4 w-4" />}
-                                  />
+                                  <div className="relative">
+                                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <Input 
+                                      placeholder="Enter your name" 
+                                      {...field} 
+                                      className="pl-10" 
+                                    />
+                                  </div>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -298,13 +315,15 @@ const LandingPage: React.FC = () => {
                               <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    placeholder="Enter your email" 
-                                    type="email" 
-                                    {...field} 
-                                    className="flex h-10" 
-                                    icon={<Mail className="h-4 w-4" />}
-                                  />
+                                  <div className="relative">
+                                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <Input 
+                                      placeholder="Enter your email" 
+                                      type="email" 
+                                      {...field} 
+                                      className="pl-10" 
+                                    />
+                                  </div>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
