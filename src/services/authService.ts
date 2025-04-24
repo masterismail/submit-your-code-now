@@ -5,7 +5,7 @@ const COGNITO_BASE_URL = "https://cognito-idp.ap-south-1.amazonaws.com/ap-south-
 const CLIENT_ID = "40ce95qriabb1vg4llg4quav19";
 const CLIENT_SECRET = "jq2q33r9ds6olclvh23a2d4iv3ghp0qdj9ku7nfa1lu7glkob9q";
 const REDIRECT_URI = window.location.origin + "/auth/callback";
-const COGNITO_DOMAIN = "https://ap-south-1-cn1xkgrvi.auth.ap-south-1.amazoncognito.com";
+const COGNITO_DOMAIN = "https://smart-spend-monitor.auth.ap-south-1.amazoncognito.com";
 
 // Handle sign-in by redirecting to Cognito hosted UI
 export const signIn = async (email: string, password: string): Promise<void> => {
