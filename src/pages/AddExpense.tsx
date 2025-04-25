@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 const AddExpense: React.FC = () => {
-  const { addExpense, categories } = useData();
+  const { addExpense, categories, wallet } = useData();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -95,7 +95,9 @@ const AddExpense: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
               <div className="relative">
-                <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
+                <span className="absolute left-3 top-2.5 text-muted-foreground">
+                  {wallet.currency === "USD" ? "$" : wallet.currency}
+                </span>
                 <Input 
                   id="amount"
                   type="number"
@@ -194,7 +196,7 @@ const AddExpense: React.FC = () => {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/app/dashboard")}
               >
                 Cancel
               </Button>

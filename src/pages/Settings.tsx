@@ -18,7 +18,7 @@ const Settings: React.FC = () => {
     setBudget, 
     thresholdAlert, 
     setThresholdAlert, 
-    wallet, 
+    wallet,
     expenses,
     clearAllData
   } = useData();
@@ -30,7 +30,6 @@ const Settings: React.FC = () => {
   const [thresholdAmount, setThresholdAmount] = useState(thresholdAlert.amount.toString());
   const [thresholdEnabled, setThresholdEnabled] = useState(thresholdAlert.enabled);
   
-  // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -87,7 +86,6 @@ const Settings: React.FC = () => {
   };
   
   const handleExportToCSV = () => {
-    // Convert expenses to CSV format
     const headers = ["ID", "Amount", "Category", "Description", "Date", "Receipt"];
     const csvData = expenses.map(expense => [
       expense.id,
@@ -98,13 +96,11 @@ const Settings: React.FC = () => {
       expense.receipt || ""
     ]);
     
-    // Create CSV content
     const csvContent = [
       headers.join(","),
       ...csvData.map(row => row.join(","))
     ].join("\n");
     
-    // Create a blob and download link
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -123,6 +119,11 @@ const Settings: React.FC = () => {
   
   const handleClearAllData = () => {
     clearAllData();
+    setBudgetAmount("0");
+    setBudgetPeriod("monthly");
+    setThresholdAmount("0");
+    setThresholdEnabled(false);
+    
     toast({
       title: "Data cleared",
       description: "All your data has been cleared successfully.",
