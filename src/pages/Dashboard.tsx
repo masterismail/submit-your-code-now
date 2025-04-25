@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Button onClick={() => navigate("/add-expense")} className="bg-expense-primary hover:bg-expense-primary/90">
+        <Button onClick={() => navigate("/app/add-expense")} className="bg-expense-primary hover:bg-expense-primary/90">
           <Plus className="h-4 w-4 mr-2" /> Add Expense
         </Button>
       </div>
@@ -238,7 +238,7 @@ const Dashboard: React.FC = () => {
             <Button 
               variant="outline" 
               className="w-full" 
-              onClick={() => navigate("/expenses")}
+              onClick={() => navigate("/app/expenses")}
             >
               View All Expenses
               <ArrowRight className="h-4 w-4 ml-2" />
@@ -279,7 +279,7 @@ const Dashboard: React.FC = () => {
                 <p className="text-muted-foreground">No expenses yet</p>
                 <Button 
                   variant="link" 
-                  onClick={() => navigate("/add-expense")} 
+                  onClick={() => navigate("/app/add-expense")} 
                   className="mt-2"
                 >
                   Add your first expense
@@ -292,7 +292,7 @@ const Dashboard: React.FC = () => {
               <Button 
                 variant="ghost" 
                 className="w-full text-expense-primary" 
-                onClick={() => navigate("/expenses")}
+                onClick={() => navigate("/app/expenses")}
               >
                 View more
               </Button>

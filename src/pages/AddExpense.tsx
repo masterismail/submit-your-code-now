@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useData } from "@/context/DataContext";
 import { useNavigate } from "react-router-dom";
@@ -59,7 +58,7 @@ const AddExpense: React.FC = () => {
         description: "Your expense has been recorded successfully.",
       });
       
-      navigate("/expenses");
+      navigate("/app/expenses");
     } catch (error) {
       console.error("Error adding expense:", error);
       toast({
@@ -73,7 +72,6 @@ const AddExpense: React.FC = () => {
   };
   
   const handleReceiptUpload = () => {
-    // Simulate receipt upload - in a real app this would connect to a file upload API
     const mockReceiptUrl = "receipt-" + Date.now() + ".jpg";
     setReceipt(mockReceiptUrl);
     
