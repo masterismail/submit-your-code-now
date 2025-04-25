@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useData } from "@/context/DataContext";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon, Upload } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { 
   Popover,
   PopoverContent,
@@ -27,7 +28,6 @@ const AddExpense: React.FC = () => {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date>(new Date());
-  const [receipt, setReceipt] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -50,7 +50,6 @@ const AddExpense: React.FC = () => {
         category,
         description,
         date,
-        receipt: receipt || undefined,
       });
       
       toast({
@@ -69,16 +68,6 @@ const AddExpense: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-  
-  const handleReceiptUpload = () => {
-    const mockReceiptUrl = "receipt-" + Date.now() + ".jpg";
-    setReceipt(mockReceiptUrl);
-    
-    toast({
-      title: "Receipt uploaded",
-      description: "Your receipt has been uploaded successfully.",
-    });
   };
   
   return (
@@ -164,25 +153,6 @@ const AddExpense: React.FC = () => {
                   />
                 </PopoverContent>
               </Popover>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="receipt">Receipt (Optional)</Label>
-              <div className="flex items-center gap-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleReceiptUpload}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Receipt
-                </Button>
-                {receipt && (
-                  <p className="text-sm text-muted-foreground">
-                    Receipt uploaded
-                  </p>
-                )}
-              </div>
             </div>
             
             <div className="flex gap-4 pt-4">
